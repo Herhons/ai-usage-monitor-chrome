@@ -1,32 +1,32 @@
-# Privacy Policy
+# 隐私政策
 
-Last updated: November 13, 2026
+最后更新：2026 年 11 月 13 日
 
-AI Usage Quota Monitor ("the extension") is a Chrome extension that displays your subscription quota usage for nine AI providers: OpenCode Go, Claude, ChatGPT/Codex, GitHub Copilot, Google Gemini, Cursor, Perplexity, Mistral Le Chat, and xAI Grok. This policy explains what data the extension handles.
+「AI 用量配额监控」（以下简称「本扩展」）是一款 Chrome 扩展，用于展示你在九家 AI 服务商的订阅额度用量：OpenCode Go、Claude、ChatGPT / Codex、GitHub Copilot、Google Gemini、Cursor、Perplexity、Mistral Le Chat 和 xAI Grok。本政策说明本扩展会处理哪些数据。
 
-## Data collection
+## 数据收集
 
-**The extension collects no user data.** It has no analytics, no tracking, no advertising, and no servers of its own. Nothing about your browsing activity, websites visited, or usage patterns is collected, stored, or transmitted to us or any third party.
+**本扩展不收集任何用户数据。** 没有统计、没有追踪、没有广告，也没有自有服务器。你的浏览行为、访问过的网站、使用习惯，都不会被本扩展收集、存储或传输给我们或任何第三方。
 
-## What the extension does with your data
+## 本扩展如何使用你的数据
 
-The extension is entirely local-first:
+本扩展完全本地优先：
 
-- **Quota information** — Your usage figures are fetched directly from each provider's website using your existing sign-in, and are displayed only on your device. Gemini and Grok are read from their usage pages in a hidden tab. They are not transmitted anywhere else.
-- **OpenCode API key** — If you choose to, you enter your OpenCode Go API key in the extension's Settings page. It is stored locally in your browser's extension storage (`chrome.storage.local`) and is sent only to opencode.ai to authenticate quota requests. It is never transmitted to any other party.
-- **Cookies and tokens** — The extension reads certain cookies in memory from claude.ai to determine your workspace, and uses your existing session when fetching quota data. Cookie and token values are never copied into extension storage and never transmitted outside your browser.
-- **Diagnostics** — When a usage-page read fails, the extension records structural diagnostics in local extension storage (percentage candidates, whether the panel rendered, tag names). Diagnostics are written only from hidden tabs and never contain page text, page titles, chat content or session URLs. Nothing is transmitted.
+- **额度信息** —— 用量数字复用你已有的登录态，直接从各服务商网站获取，只在你本机显示。Gemini 与 Grok 通过隐藏标签页读取其用量页面。这些数据不会传到别处。
+- **OpenCode API Key** —— 如果你选择使用，可在扩展的设置页填入 OpenCode Go API Key。它保存在浏览器本地的扩展存储（`chrome.storage.local`）中，且只发送给 opencode.ai 用于额度请求鉴权，绝不会发给其它任何方。
+- **Cookie 与 token** —— 本扩展会在内存中读取 claude.ai 的少量 Cookie 以确定工作区，并复用你已有的会话来获取额度数据。Cookie 与 token 的值不会被复制进扩展存储，也不会传出浏览器。
+- **诊断信息** —— 用量页读取失败时，本扩展会在本地扩展存储中记录结构性诊断信息（百分比候选值、面板是否渲染、标签名）。诊断只由隐藏标签页写入，绝不包含页面文本、页面标题、聊天内容或会话 URL，也不会向外传输。
 
-## Third parties
+## 第三方
 
-The only third parties the extension communicates with are the nine providers whose quota data it displays. These requests are made only to fetch your own account usage and are subject to each provider's own privacy policies.
+本扩展只会与它展示额度数据的那九家服务商通信。这些请求仅用于获取你自己账号的用量，并受各服务商自身隐私政策约束。
 
-## Changes to this policy
+## 本政策的变更
 
-If this policy changes, the updated version will be posted in this repository.
+若本政策有变更，更新后的版本会发布在本仓库中。
 
-## Contact
+## 联系方式
 
-Questions about this policy: admin@finchtech.my
+关于本政策的疑问：admin@finchtech.my
 
 © 2026 Finch Technology Enterprise
