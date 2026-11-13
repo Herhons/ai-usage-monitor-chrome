@@ -121,11 +121,13 @@ and renders remaining counts per capability (messages, fast reasoning, deep rese
 
 ### xAI Grok
 
-Needs a signed-in session at `grok.com`. Calls:
+Needs a signed-in session at `grok.com`. Grok has no usable public JSON usage endpoint: the old `GET /rest/usage/free-usage-gates` only reports free-tier gates (meaningless for SuperGrok subscribers), and the real quota comes from gRPC-web protobuf without a public schema. The extension therefore opens the **Settings → Usage** panel in a hidden tab and reads the rendered values:
 
-`GET https://grok.com/rest/usage/free-usage-gates`
+- Tries `https://grok.com/?referrer=x&_s=usage` first, then the older `?usage=&_s=usage` and `?usage=` URLs.
+- Reads percentages from `aria-label` when available, otherwise from page text — the current panel renders `100% 已使用` as plain text, not as a `<number-flow-react>` component.
+- Caches the result in `chrome.storage.local.usageCache`. If a scrape fails the card keeps the last value but shows an explicit "data expired" line instead of silently looking fresh.
 
-and renders remaining counts for the free-tier gates (chat, image & video, voice, build). SuperGrok-only usage pools are not covered, so subscribers on plans without gates may see nothing. Direct fetch first, relay fallback through an open Grok tab.
+The hidden tab clicks the "使用量" menu entry only if the panel did not render; it never activates or clicks in a tab you are looking at. Diagnostics are written only from hidden tabs and contain structural data (percentage candidates, whether the panel rendered) — never page text, titles or session URLs. See `relay-grok.js` for the parser, and the `__grokDiag` / `__grokScrapeDiag` storage keys for failure snapshots.
 
 ## Privacy / security
 
@@ -156,8 +158,8 @@ Open the provider's site in a tab, make sure you are logged in, then press Refre
 That is the degraded state: the adapter could not reach a working usage endpoint. The card shows a compact message instead of a quota bar. Today this is expected for:
 
 - **GitHub Copilot** — the usage endpoint is retired (see above).
-- **Google Gemini** — no usage endpoint exists yet (see above).
-- **xAI Grok** — only the free-tier gates are covered; SuperGrok accounts without gates may show nothing.
+- **Google Gemini** — read from a hidden usage page (see above); a layout change can leave the last cached value in place.
+- **xAI Grok** — the Usage panel is scraped from a hidden tab. If grok.com changes that panel again, the card keeps the last value but adds a "data expired" line. Inspect `__grokDiag` / `__grokScrapeDiag` in `chrome.storage.local` for a snapshot of the failed read.
 
 Other providers show this too when the endpoint is unreachable or the response shape changes — it is the honest fallback, not a bug.
 

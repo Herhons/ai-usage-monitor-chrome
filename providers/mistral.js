@@ -88,16 +88,16 @@ async function directMistralUsage() {
     }
   });
   const limits = parseMistralLimits(text);
-  if (!limits) throw new Error('Unexpected Mistral limits response format');
+  if (!limits) throw new Error('Mistral 限额返回格式异常');
   return limits;
 }
 
 const MISTRAL_CAPABILITY_LABELS = {
-  message_send: 'Messages',
-  fast_reasoning: 'Fast reasoning',
-  deep_research: 'Deep research',
-  fast_deep_research: 'Fast deep research',
-  connector_tool_call: 'Connector tool calls'
+  message_send: '消息',
+  fast_reasoning: '快速推理',
+  deep_research: '深度研究',
+  fast_deep_research: '快速深度研究',
+  connector_tool_call: '连接器工具调用'
 };
 
 function mistralLabel(key) {
@@ -108,12 +108,12 @@ function mistralCountRow(key, entry) {
   const remaining = firstNumber(entry?.remainingPoints ?? entry?.remaining_points ?? entry?.remaining);
   if (remaining == null) return '';
   const total = firstNumber(entry?.points ?? entry?.limit ?? entry?.max);
-  const meta = total != null && total !== remaining ? `of ${Math.round(total)}` : '';
+  const meta = total != null && total !== remaining ? `共 ${Math.round(total)}` : '';
   return `
     <div class="metric">
       <div class="metric-row">
         <span class="metric-label">${escapeHtml(mistralLabel(key))}</span>
-        <span class="metric-value">${Math.round(remaining)} left</span>
+        <span class="metric-value">${Math.round(remaining)} 次剩余</span>
       </div>
       ${meta ? `<div class="metric-meta">${escapeHtml(meta)}</div>` : ''}
     </div>`;
@@ -131,7 +131,7 @@ AIUsageProviders.register({
   async refresh(silent = false) {
     const body = document.getElementById(`card-${this.id}-body`);
     if (!body) return false;
-    if (!silent) body.innerHTML = '<div class="loading">Loading…</div>';
+    if (!silent) body.innerHTML = '<div class="loading">加载中…</div>';
     try {
       let data;
       try {
@@ -140,16 +140,16 @@ AIUsageProviders.register({
         data = await relayMessage('https://chat.mistral.ai/*', { type: 'AI_USAGE_MISTRAL' });
       }
       const html = mistralUsageHtml(data);
-      if (!html) throw new Error('Unexpected Mistral usage response format');
+      if (!html) throw new Error('Mistral 用量返回格式异常');
       body.innerHTML = html;
       return true;
     } catch {
-      if (!silent) body.innerHTML = errorHtml('Usage not available for Mistral Le Chat yet.', 'Sign in to chat.mistral.ai and keep a Mistral Le Chat tab open for the fallback relay.');
+      if (!silent) body.innerHTML = notAvailableHtml('Mistral Le Chat 用量暂不可用');
       return false;
     }
   },
   settingsHtml() {
-    return `<p>Sign in normally to <strong>chat.mistral.ai</strong>. The extension does not copy or persist those session cookies.</p>`;
+    return `<p>正常登录 <strong>chat.mistral.ai</strong>。扩展不会复制或保存这些会话 Cookie。</p>`;
   },
   async readSettings() {}
 });

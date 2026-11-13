@@ -6,7 +6,7 @@ async function render() {
       <h2>${escapeHtml(p.label)}</h2>
       <label class="toggle-row">
         <input type="checkbox" id="en-${p.id}" ${prefs.enabled.has(p.id) ? 'checked' : ''} />
-        <span>Enable ${escapeHtml(p.label)}</span>
+        <span>启用 ${escapeHtml(p.label)}</span>
       </label>
       <div class="config">${p.settingsHtml()}</div>
     </section>
@@ -27,7 +27,7 @@ document.getElementById('save').addEventListener('click', async () => {
   });
   for (const p of AIUsageProviders.list) await p.readSettings();
   const status = document.getElementById('status');
-  status.textContent = 'Saved.';
+  status.textContent = '已保存';
   setTimeout(() => { status.textContent = ''; }, 1500);
 });
 
@@ -36,7 +36,7 @@ document.getElementById('providerSettings').addEventListener('click', (event) =>
   const input = document.getElementById('cfg-opencode-key');
   const show = input.type === 'password';
   input.type = show ? 'text' : 'password';
-  event.target.textContent = show ? 'Hide' : 'Show';
+  event.target.textContent = show ? '隐藏' : '显示';
 });
 
 render();

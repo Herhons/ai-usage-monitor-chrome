@@ -30,7 +30,7 @@ function copilotUsageHtml(data) {
   const pct = toPercent(rawPct != null ? rawPct : ratio);
   const reset = resetMeta(usage?.reset_date ?? usage?.reset_at ?? usage?.resetAt ?? usage?.resets_at ?? usage?.resetsAt);
   const detail = used != null && allowed != null ? `${Math.round(used)} / ${Math.round(allowed)}` : '';
-  return metricHtml('Copilot usage', pct, reset, detail);
+  return metricHtml('Copilot 用量', pct, reset, detail);
 }
 
 AIUsageProviders.register({
@@ -41,7 +41,7 @@ AIUsageProviders.register({
   async refresh(silent = false) {
     const body = document.getElementById(`card-${this.id}-body`);
     if (!body) return false;
-    if (!silent) body.innerHTML = '<div class="loading">Loading…</div>';
+    if (!silent) body.innerHTML = '<div class="loading">加载中…</div>';
     try {
       let data;
       try {
@@ -50,16 +50,16 @@ AIUsageProviders.register({
         data = await relayMessage('https://copilot.github.com/*', { type: 'AI_USAGE_COPILOT' });
       }
       const html = copilotUsageHtml(data);
-      if (!html) throw new Error('Unexpected GitHub Copilot usage response format');
+      if (!html) throw new Error('GitHub Copilot 用量返回格式异常');
       body.innerHTML = html;
       return true;
     } catch {
-      if (!silent) body.innerHTML = errorHtml('Usage not available for GitHub Copilot yet.', 'Sign in to github.com and enable Copilot in Settings. If needed, keep a GitHub tab open for the fallback relay.');
+      if (!silent) body.innerHTML = notAvailableHtml('GitHub Copilot 用量暂不可用');
       return false;
     }
   },
   settingsHtml() {
-    return `<p>Sign in normally to <strong>github.com</strong> with Copilot enabled. The extension does not copy or persist those session cookies.</p>`;
+    return `<p>正常登录 <strong>github.com</strong> 并已开通 Copilot。扩展不会复制或保存这些会话 Cookie。</p>`;
   },
   async readSettings() {}
 });

@@ -53,7 +53,7 @@ function perplexityCountRow(label, remaining, meta = '') {
     <div class="metric">
       <div class="metric-row">
         <span class="metric-label">${escapeHtml(label)}</span>
-        <span class="metric-value">${Math.round(n)} left</span>
+        <span class="metric-value">${Math.round(n)} 次剩余</span>
       </div>
       ${meta ? `<div class="metric-meta">${escapeHtml(meta)}</div>` : ''}
     </div>`;
@@ -76,17 +76,17 @@ function perplexityUsageHtml(data) {
   const fq = quota?.free_queries ?? quota?.freeQueries;
   const free = [fq?.remaining_detail?.remaining, fq?.remaining_detail?.count, fq?.remaining_detail?.value, fq?.remaining].find((v) => v != null);
   const rows = [
-    perplexityCountRow('Pro Search', quota?.remaining_pro, 'resets weekly'),
-    perplexityCountRow('Deep Research', quota?.remaining_research, 'resets monthly'),
-    perplexityCountRow('Labs', quota?.remaining_labs),
-    perplexityCountRow('Agentic research', quota?.remaining_agentic_research),
-    perplexityCountRow('Free queries', free)
+    perplexityCountRow('专业搜索', quota?.remaining_pro, '每周重置'),
+    perplexityCountRow('深度研究', quota?.remaining_research, '每月重置'),
+    perplexityCountRow('实验室', quota?.remaining_labs),
+    perplexityCountRow('智能体研究', quota?.remaining_agentic_research),
+    perplexityCountRow('免费查询', free)
   ].join('');
   if (!rows) return '';
   const settings = data?.settings;
   const tier = settings?.subscription_tier ?? settings?.subscriptionTier;
   const tierRow = typeof tier === 'string' && tier.trim()
-    ? perplexityTextRow('Plan', tier.charAt(0).toUpperCase() + tier.slice(1))
+    ? perplexityTextRow('套餐', tier.charAt(0).toUpperCase() + tier.slice(1))
     : '';
   return tierRow + rows;
 }
@@ -99,7 +99,7 @@ AIUsageProviders.register({
   async refresh(silent = false) {
     const body = document.getElementById(`card-${this.id}-body`);
     if (!body) return false;
-    if (!silent) body.innerHTML = '<div class="loading">Loading…</div>';
+    if (!silent) body.innerHTML = '<div class="loading">加载中…</div>';
     try {
       let data;
       try {
@@ -108,16 +108,16 @@ AIUsageProviders.register({
         data = await relayMessage('https://www.perplexity.ai/*', { type: 'AI_USAGE_PERPLEXITY' });
       }
       const html = perplexityUsageHtml(data);
-      if (!html) throw new Error('Unexpected Perplexity usage response format');
+      if (!html) throw new Error('Perplexity 用量返回格式异常');
       body.innerHTML = html;
       return true;
     } catch {
-      if (!silent) body.innerHTML = errorHtml('Usage not available for Perplexity yet.', 'Sign in to www.perplexity.ai and keep a Perplexity tab open for the fallback relay.');
+      if (!silent) body.innerHTML = notAvailableHtml('Perplexity 用量暂不可用');
       return false;
     }
   },
   settingsHtml() {
-    return `<p>Sign in normally to <strong>www.perplexity.ai</strong>. The extension does not copy or persist those session cookies.</p>`;
+    return `<p>正常登录 <strong>www.perplexity.ai</strong>。扩展不会复制或保存这些会话 Cookie。</p>`;
   },
   async readSettings() {}
 });

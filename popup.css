@@ -26,49 +26,35 @@
   }
 }
 * { box-sizing: border-box; }
-html, body { height: 100%; }
+html { height: 100%; }
 body {
   margin: 0;
   width: 100%;
   min-width: 380px;
-  min-height: 480px;
   background: var(--bg);
   color: var(--text);
-  font: 15px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 14px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+body.container-window, body.container-tab { min-height: 100vh; }
 button { font: inherit; color: inherit; }
-.shell { padding: 14px; max-width: 520px; margin: 0 auto; }
+.shell { padding: 12px; max-width: 520px; margin: 0 auto; }
 
-/* Native toolbar popup: Chrome sizes it to the rendered content, which
-   grows as provider cards load and fills in, so pin a fixed height and
-   let the provider list scroll internally. Window and tab containers
-   keep their own sizing (auto-fit / full page). */
+/* Native toolbar popup: 让浏览器按内容自适应高度。
+   启用了几个服务商就长多高，不再固定 540px + 内部滚动。
+   Chrome 的弹窗高度上限约 600px，超过时由 body 自身滚动。 */
 body.container-popup {
-  height: 540px;
   min-height: 0;
-  overflow: hidden;
-}
-body.container-popup .shell {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-body.container-popup #providers {
-  flex: 1 1 auto;
-  min-height: 0;
+  max-height: 600px;
   overflow-y: auto;
 }
-body.container-popup #emptyState:not([hidden]) {
-  flex: 1 1 auto;
+body.container-popup .shell {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 body.container-popup.empty-popup #providers { display: none; }
-.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-h1 { margin: 0; font-size: 19px; letter-spacing: -0.02em; }
-.topbar p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+h1 { margin: 0; font-size: 17px; letter-spacing: -0.02em; }
+.topbar p { margin: 1px 0 0; color: var(--muted); font-size: 12px; }
 .icon-btn, .small-btn, .link-btn {
   border: 1px solid var(--border);
   background: var(--card);
@@ -79,11 +65,11 @@ h1 { margin: 0; font-size: 19px; letter-spacing: -0.02em; }
 .icon-btn { width: 34px; height: 34px; font-size: 20px; line-height: 1; }
 .icon-btn.spinning { animation: spin .8s linear infinite; }
 .icon-btn:active, .small-btn:active { transform: scale(0.96); }
-.view-switcher { display: flex; gap: 4px; margin-bottom: 12px; align-items: center; }
+.view-switcher { display: flex; gap: 4px; margin-bottom: 8px; align-items: center; }
 .view-btn {
   flex: 1;
-  padding: 5px 0;
-  font-size: 13px;
+  padding: 3px 0;
+  font-size: 12px;
   border: 1px solid var(--border);
   background: var(--card);
   border-radius: 8px;
@@ -101,12 +87,12 @@ h1 { margin: 0; font-size: 19px; letter-spacing: -0.02em; }
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 13px;
-  padding: 12px;
-  margin-bottom: 10px;
+  padding: 9px 10px;
+  margin-bottom: 7px;
 }
-.provider-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.provider-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
 .provider-title { display: flex; align-items: center; gap: 8px; min-width: 0; }
-h2 { margin: 0; font-size: 16px; }
+h2 { margin: 0; font-size: 15px; }
 .plan-badge {
   flex: none;
   padding: 1px 7px;
@@ -124,16 +110,16 @@ h2 { margin: 0; font-size: 16px; }
   from { opacity: 0; transform: scale(0.94); }
   to { opacity: 1; transform: scale(1); }
 }
-.small-btn { padding: 5px 9px; font-size: 13px; }
-.body { min-height: 48px; }
+.small-btn { padding: 3px 8px; font-size: 12px; }
+.body { min-height: 0; }
 .loading { color: var(--muted); padding: 10px 0; }
-.metric { margin: 9px 0; }
+.metric { margin: 6px 0; }
 .metric:first-child { margin-top: 0; }
-.metric-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 4px; }
-.metric-label { font-weight: 600; font-size: 14px; }
-.metric-value { font-variant-numeric: tabular-nums; font-size: 14px; }
-.metric-meta { color: var(--muted); font-size: 12px; margin-top: 3px; }
-.bar { height: 7px; border-radius: 999px; background: var(--track); overflow: hidden; }
+.metric-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 2px; }
+.metric-label { font-weight: 600; font-size: 13px; }
+.metric-value { font-variant-numeric: tabular-nums; font-size: 13px; }
+.metric-meta { color: var(--muted); font-size: 11px; margin-top: 1px; }
+.bar { height: 6px; border-radius: 999px; background: var(--track); overflow: hidden; }
 .bar > div { height: 100%; border-radius: inherit; background: var(--fill); transition: width .2s ease, background-color .25s ease; }
 .bar > div.bar-ok { background: var(--ok); }
 .bar > div.bar-warn { background: var(--warning); }
@@ -148,8 +134,15 @@ h2 { margin: 0; font-size: 16px; }
 .hint { color: var(--muted); font-size: 13px; margin-top: 5px; }
 .status-ok { color: var(--ok); }
 .status-warn { color: var(--warning); }
-footer { display: flex; justify-content: space-between; align-items: center; padding: 4px 2px 0; color: var(--muted); font-size: 11px; }
+footer { display: flex; justify-content: space-between; align-items: center; padding: 0 2px; color: var(--muted); font-size: 10px; }
 .footer-links { display: flex; gap: 10px; }
 .link-btn { border: 0; background: transparent; padding: 4px; color: var(--muted); text-decoration: underline; }
 .empty { text-align: center; color: var(--muted); padding: 24px 0 8px; font-size: 13px; }
 .empty .small-btn { margin-top: 10px; }
+
+/* 不可用的服务商折叠成紧凑卡片：去掉 Open 按钮与多余留白 */
+.unavailable-row { color: var(--muted); font-size: 13px; }
+.provider:has(.unavailable-row) { padding: 9px 12px; }
+.provider:has(.unavailable-row) .provider-head { margin-bottom: 4px; }
+.provider:has(.unavailable-row) .body { min-height: 0; }
+.provider:has(.unavailable-row) .small-btn { display: none; }
