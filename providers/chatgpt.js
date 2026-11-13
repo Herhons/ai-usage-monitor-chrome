@@ -37,7 +37,7 @@ function findAccountId(value, depth = 0) {
 async function directChatGptUsage() {
   const session = await jsonFetch('https://chatgpt.com/api/auth/session', { credentials: 'include', headers: { 'Accept': 'application/json' } });
   const token = findAccessToken(session);
-  if (!token) throw new Error('ChatGPT session did not expose an access token');
+  if (!token) throw new Error('ChatGPT 会话未返回访问令牌');
   const jwt = decodeJwtPayload(token);
   const accountId = findAccountId(session) || findAccountId(jwt);
   const headers = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
@@ -47,11 +47,23 @@ async function directChatGptUsage() {
 
 function chatGptUsageHtml(data) {
   const rate = data?.rate_limit ?? data?.rateLimit ?? {};
-  const windows = [rate.primary_window ?? rate.primaryWindow, rate.secondary_window ?? rate.secondaryWindow];
-  const weekly = windows.find((w) => w && (w.limit_window_seconds ?? w.limitWindowSeconds ?? 0) >= 604800) ?? windows.find(Boolean) ?? null;
-  const rows = [
-    ['Weekly usage limit', weekly]
-  ];
+  const rawWindows = [rate.primary_window ?? rate.primaryWindow, rate.secondary_window ?? rate.secondaryWindow].filter(Boolean);
+  const windowSeconds = (w) => firstNumber(w.limit_window_seconds, w.limitWindowSeconds, w.window_seconds);
+  const labelForWindow = (w) => {
+    const secs = windowSeconds(w);
+    if (secs == null) return '本周期额度';
+    if (secs >= 6 * 86400) return '每周额度';
+    if (secs >= 86400) return `${Math.round(secs / 86400)} 天额度`;
+    if (secs >= 3600) return `${Math.round(secs / 3600)} 小时额度`;
+    return `${Math.round(secs / 60)} 分钟额度`;
+  };
+  // 两个窗口都要展示（Primary 通常是 5 小时，Secondary 是每周），短周期排在前面
+  const windows = rawWindows
+    .map((w, i) => ({ w, i, secs: windowSeconds(w) ?? 0 }))
+    .sort((a, b) => (a.secs - b.secs) || (a.i - b.i));
+  const rows = windows.length
+    ? windows.map(({ w }) => [labelForWindow(w), w])
+    : [['每周额度', null]];
   let html = rows.map(([label, w]) => {
     if (!w) return '';
     const pct = toPercent(firstNumber(w.used_percent, w.usedPercent, w.utilization, w.percent));
@@ -65,7 +77,7 @@ function chatGptUsageHtml(data) {
       const w = item?.rate_limit ?? item?.rateLimit ?? item;
       const pct = toPercent(firstNumber(w.used_percent, w.usedPercent, w.utilization, w.percent));
       if (pct == null) continue;
-      const label = item.limit_name ?? item.limitName ?? item.metered_feature ?? 'Additional';
+      const label = item.limit_name ?? item.limitName ?? item.metered_feature ?? '额外';
       html += metricHtml(label, pct, resetMeta(w.reset_at ?? w.resetAt));
     }
   }
@@ -78,29 +90,31 @@ AIUsageProviders.register({
   plan: 'Plus',
   needs: 'session',
   openUrl: 'https://chatgpt.com/#usage',
-  async refresh(silent = false) {
-    const body = document.getElementById(`card-${this.id}-body`);
-    if (!body) return false;
-    if (!silent) body.innerHTML = '<div class="loading">Loading…</div>';
+  // 取数：不碰 DOM，因此也能在 service worker 里跑（后台定时刷新用）
+  async fetchData() {
+    let data;
     try {
-      let data;
-      try {
-        data = await directChatGptUsage();
-      } catch {
-        data = await relayMessage('https://chatgpt.com/*', { type: 'AI_USAGE_CHATGPT' });
-      }
-      const html = chatGptUsageHtml(data);
-      if (!html) throw new Error('Unexpected ChatGPT/Codex usage response format');
-      body.innerHTML = html;
-      if (data?.plan_type) document.getElementById('card-chatgpt-plan').textContent = String(data.plan_type).replaceAll('_', ' ');
-      return true;
-    } catch (error) {
-      if (!silent) body.innerHTML = errorHtml(`Could not load ChatGPT/Codex: ${error.message}`, 'Sign in to chatgpt.com. If needed, keep a ChatGPT tab open for the fallback relay.');
-      return false;
+      data = await directChatGptUsage();
+    } catch {
+      data = await relayMessage('https://chatgpt.com/*', { type: 'AI_USAGE_CHATGPT' });
     }
+    if (!chatGptUsageHtml(data)) {
+      const error = new Error('ChatGPT/Codex 用量返回格式异常');
+      error.hint = '请先登录 chatgpt.com。如仍失败，保持一个 ChatGPT 标签页打开作为中转。';
+      throw error;
+    }
+    return data;
+  },
+  // 渲染：只在页面上下文调用
+  renderHtml(data) {
+    if (typeof document !== 'undefined' && data?.plan_type) {
+      const badge = document.getElementById('card-chatgpt-plan');
+      if (badge) badge.textContent = String(data.plan_type).replaceAll('_', ' ');
+    }
+    return chatGptUsageHtml(data);
   },
   settingsHtml() {
-    return `<p>Sign in normally to <strong>claude.ai</strong> and <strong>chatgpt.com</strong>. The extension does not copy or persist those session cookies.</p>`;
+    return `<p>正常登录 <strong>claude.ai</strong> 与 <strong>chatgpt.com</strong>。扩展不会复制或保存这些会话 Cookie。</p>`;
   },
   async readSettings() {}
 });

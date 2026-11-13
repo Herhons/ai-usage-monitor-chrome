@@ -27,13 +27,15 @@ On refresh, each adapter first fetches usage directly from the extension context
 - `{ type: 'AI_USAGE_CLAUDE' }` → relay-claude.js
 - `{ type: 'AI_USAGE_CHATGPT' }` → relay-chatgpt.js
 - `{ type: 'AI_USAGE_COPILOT' }` → relay-copilot.js
-- `{ type: 'AI_USAGE_GEMINI' }` → relay-gemini.js
+- `{ type: 'AI_USAGE_READ' }` → relay-gemini.js (usage-page scrape, see below)
 - `{ type: 'AI_USAGE_CURSOR' }` → relay-cursor.js
 - `{ type: 'AI_USAGE_PERPLEXITY' }` → relay-perplexity.js
 - `{ type: 'AI_USAGE_MISTRAL' }` → relay-mistral.js
-- `{ type: 'AI_USAGE_GROK' }` → relay-grok.js
+- `{ type: 'AI_USAGE_READ' }` → relay-gemini.js / relay-grok.js (usage-page scrape, see below)
 
-The relay scripts and their adapters must stay in sync: message type, request flow, and response shape `{ ok: true, data }` / `{ ok: false, error }`. Each relay guards re-install with `globalThis.__aiUsage*RelayInstalled` (SPAs re-inject content scripts). Copilot and Gemini are currently degraded: their adapters render a "not available" message (endpoint retired / no endpoint found); Grok covers free-tier gates only.
+The relay scripts and their adapters must stay in sync: message type, request flow, and response shape `{ ok: true, data }` / `{ ok: false, error }`. Each relay guards re-install with `globalThis.__aiUsage*RelayInstalled` (SPAs re-inject content scripts). Copilot is degraded (endpoint retired).
+
+Gemini and Grok bypass the direct-fetch → relay fallback above: neither has a usable public JSON usage endpoint. `background.js` opens a hidden usage tab (`USAGE_PAGES`) and polls `AI_USAGE_READ` until the content script returns a parsed result; results go into `chrome.storage.local.usageCache`. `AI_USAGE_GROK` now only replies "no longer supported". Grok's parser accepts both the legacy `<number-flow-react aria-label>` markup and plain-text percentages, and writes `__grokDiag` / `__grokScrapeDiag` snapshots when a read fails.
 
 ## Conventions to preserve
 

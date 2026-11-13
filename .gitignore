@@ -1,1 +1,5 @@
 .worktrees/
+# Local backups produced while patching an unpacked extension
+*.bak
+*.bak-*
+*.orig

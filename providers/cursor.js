@@ -36,7 +36,7 @@ function cursorUsageHtml(data) {
   if (pct == null && ratio == null) return '';
   const detail = used != null && limit != null ? `${Math.round(used)} / ${Math.round(limit)}` : '';
   const reset = resetMeta(w?.end_of_month ?? w?.reset_at ?? w?.resets_at ?? w?.subscription?.end_of_month);
-  return metricHtml('Cursor usage', toPercent(pct ?? ratio), reset, detail);
+  return metricHtml('Cursor 用量', toPercent(pct ?? ratio), reset, detail);
 }
 
 AIUsageProviders.register({
@@ -47,7 +47,7 @@ AIUsageProviders.register({
   async refresh(silent = false) {
     const body = document.getElementById(`card-${this.id}-body`);
     if (!body) return false;
-    if (!silent) body.innerHTML = '<div class="loading">Loading…</div>';
+    if (!silent) body.innerHTML = '<div class="loading">加载中…</div>';
     try {
       let data;
       try {
@@ -56,16 +56,16 @@ AIUsageProviders.register({
         data = await relayMessage('https://cursor.com/*', { type: 'AI_USAGE_CURSOR' });
       }
       const html = cursorUsageHtml(data);
-      if (!html) throw new Error('Unexpected Cursor usage response format');
+      if (!html) throw new Error('Cursor 用量返回格式异常');
       body.innerHTML = html;
       return true;
     } catch {
-      if (!silent) body.innerHTML = errorHtml('Usage not available for Cursor yet.', 'Sign in to cursor.com and keep a Cursor tab open for the fallback relay.');
+      if (!silent) body.innerHTML = notAvailableHtml('Cursor 用量暂不可用');
       return false;
     }
   },
   settingsHtml() {
-    return `<p>Sign in normally to <strong>cursor.com</strong>. The extension does not copy or persist those session cookies.</p>`;
+    return `<p>正常登录 <strong>cursor.com</strong>。扩展不会复制或保存这些会话 Cookie。</p>`;
   },
   async readSettings() {}
 });

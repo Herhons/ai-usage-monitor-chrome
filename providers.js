@@ -37,21 +37,21 @@ function resetText(raw) {
   const targetMs = parseResetTarget(raw);
   if (targetMs == null) return '';
   const diff = targetMs - Date.now();
-  if (diff <= 0) return 'resetting now';
+  if (diff <= 0) return '即将重置';
   const minutes = Math.ceil(diff / 60000);
-  if (minutes < 60) return `resets in ${minutes}m`;
+  if (minutes < 60) return `${minutes} 分钟后重置`;
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  if (hours < 48) return `resets in ${hours}h${mins ? ` ${mins}m` : ''}`;
+  if (hours < 48) return `${hours} 小时${mins ? ` ${mins} 分` : ''}后重置`;
   const days = Math.floor(hours / 24);
   const remHours = hours % 24;
-  return `resets in ${days}d${remHours ? ` ${remHours}h` : ''}`;
+  return `${days} 天${remHours ? ` ${remHours} 小时` : ''}后重置`;
 }
 
 function resetMeta(raw) {
   const targetMs = parseResetTarget(raw);
   if (targetMs == null) return '';
-  const absolute = `Resets ${new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }).format(targetMs)}`;
+  const absolute = `重置于 ${new Intl.DateTimeFormat('zh-CN', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }).format(targetMs)}`;
   if (targetMs <= Date.now()) return absolute;
   return `${absolute} · ${resetText(raw)}`;
 }
@@ -85,6 +85,10 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
+}
+
+function notAvailableHtml(text) {
+  return `<div class="unavailable-row">${escapeHtml(text)}</div>`;
 }
 
 function errorHtml(message, action = '') {
@@ -132,16 +136,18 @@ async function relayMessage(hostPattern, message) {
       if (response?.ok) return response.data;
     } catch { /* try next */ }
   }
-  throw new Error('Open the provider website in a tab and try Refresh again');
+  throw new Error('请先在标签页中打开该服务商的网站，再点刷新');
 }
 
-const DEFAULT_ENABLED = ['opencode', 'claude', 'chatgpt'];
+// 全新安装时的默认启用项（弹窗高度上限 600px，默认三个刚好放得下）
+const DEFAULT_ENABLED = ['chatgpt', 'gemini', 'grok'];
 
 async function loadProviderPrefs() {
   const stored = await chrome.storage.local.get(['enabledProviders', 'opencodeApiKey']);
   let map = stored.enabledProviders;
   if (map == null || typeof map !== 'object') {
-    map = stored.opencodeApiKey ? Object.fromEntries(DEFAULT_ENABLED.map((id) => [id, true])) : {};
+    const ids = stored.opencodeApiKey ? ['opencode', ...DEFAULT_ENABLED] : DEFAULT_ENABLED;
+    map = Object.fromEntries(ids.map((id) => [id, true]));
     await chrome.storage.local.set({ enabledProviders: map });
   }
   return { enabled: new Set(Object.entries(map).filter(([, v]) => v).map(([id]) => id)) };
@@ -150,7 +156,9 @@ async function loadProviderPrefs() {
 const AIUsageProviders = {
   list: [],
   register(provider) {
-    if (!provider?.id || !provider.label || typeof provider.refresh !== 'function') {
+    const hasFetch = typeof provider?.fetchData === 'function' && typeof provider?.renderHtml === 'function';
+    const hasRefresh = typeof provider?.refresh === 'function';
+    if (!provider?.id || !provider.label || (!hasFetch && !hasRefresh)) {
       throw new Error(`Invalid provider registration: ${provider?.id}`);
     }
     this.list.push(provider);

@@ -32,7 +32,7 @@ async function directClaudeUsage() {
     }
     if (orgId) cachedClaudeOrgId = orgId;
   }
-  if (!orgId) throw new Error('Could not determine Claude organization');
+  if (!orgId) throw new Error('无法确定 Claude 组织');
   return jsonFetch(`https://claude.ai/api/organizations/${encodeURIComponent(orgId)}/usage`, {
     credentials: 'include',
     headers: { 'anthropic-client-platform': 'web_claude_ai', 'Accept': 'application/json' }
@@ -41,10 +41,10 @@ async function directClaudeUsage() {
 
 function claudeUsageHtml(data) {
   const rows = [
-    ['Current session', data?.five_hour ?? data?.fiveHour],
-    ['Weekly limits', data?.seven_day ?? data?.sevenDay],
-    ['Weekly Sonnet', data?.seven_day_sonnet ?? data?.sevenDaySonnet],
-    ['Weekly Opus', data?.seven_day_opus ?? data?.sevenDayOpus]
+    ['当前会话', data?.five_hour ?? data?.fiveHour],
+    ['每周额度', data?.seven_day ?? data?.sevenDay],
+    ['每周 Sonnet', data?.seven_day_sonnet ?? data?.sevenDaySonnet],
+    ['每周 Opus', data?.seven_day_opus ?? data?.sevenDayOpus]
   ];
   let html = rows.map(([label, w]) => {
     if (!w) return '';
@@ -61,7 +61,7 @@ function claudeUsageHtml(data) {
       const divisor = limit > 500 ? 100 : 1; // some Claude payloads use cents
       const usedUsd = spent / divisor;
       const limitUsd = limit / divisor;
-      html += metricHtml('Extra usage', (usedUsd / limitUsd) * 100, '', `${money(usedUsd)} / ${money(limitUsd)}`);
+      html += metricHtml('额外用量', (usedUsd / limitUsd) * 100, '', `${money(usedUsd)} / ${money(limitUsd)}`);
     }
   }
   return html;
@@ -70,13 +70,13 @@ function claudeUsageHtml(data) {
 AIUsageProviders.register({
   id: 'claude',
   label: 'Claude',
-  plan: 'Team / subscription',
+  plan: '团队 / 订阅',
   needs: 'session',
   openUrl: 'https://claude.ai/settings/usage',
   async refresh(silent = false) {
     const body = document.getElementById(`card-${this.id}-body`);
     if (!body) return false;
-    if (!silent) body.innerHTML = '<div class="loading">Loading…</div>';
+    if (!silent) body.innerHTML = '<div class="loading">加载中…</div>';
     try {
       let data;
       try {
@@ -85,16 +85,16 @@ AIUsageProviders.register({
         data = await relayMessage('https://claude.ai/*', { type: 'AI_USAGE_CLAUDE' });
       }
       const html = claudeUsageHtml(data);
-      if (!html) throw new Error('Unexpected Claude usage response format');
+      if (!html) throw new Error('Claude 用量返回格式异常');
       body.innerHTML = html;
       return true;
     } catch (error) {
-      if (!silent) body.innerHTML = errorHtml(`Could not load Claude: ${error.message}`, 'Sign in to claude.ai. If needed, keep a Claude tab open for the fallback relay.');
+      if (!silent) body.innerHTML = errorHtml(`加载 Claude 失败：${error.message}`, '请先登录 claude.ai。如仍失败，保持一个 Claude 标签页打开作为中转。');
       return false;
     }
   },
   settingsHtml() {
-    return `<p>Sign in normally to <strong>claude.ai</strong> and <strong>chatgpt.com</strong>. The extension does not copy or persist those session cookies.</p>`;
+    return `<p>正常登录 <strong>claude.ai</strong> 与 <strong>chatgpt.com</strong>。扩展不会复制或保存这些会话 Cookie。</p>`;
   },
   async readSettings() {}
 });

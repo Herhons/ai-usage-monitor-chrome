@@ -1,38 +1,38 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AI Usage Quota Monitor</title>
+  <title>AI 用量配额监控</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
   <main class="shell">
     <header class="topbar">
       <div>
-        <h1>AI Usage Quota Monitor</h1>
-        <p id="updatedAt">Not refreshed yet</p>
+        <h1>AI 用量配额监控</h1>
+        <p id="updatedAt">尚未刷新</p>
       </div>
-      <button id="refreshAll" class="icon-btn" title="Refresh all" aria-label="Refresh all">↻</button>
+      <button id="refreshAll" class="icon-btn" title="刷新全部" aria-label="刷新全部">↻</button>
     </header>
 
-    <nav class="view-switcher" aria-label="Open as">
-      <button class="view-btn" data-open-container="window" title="Open as a popup window">Open as window</button>
-      <button class="view-btn" data-open-container="tab" title="Open as a browser tab">Open as tab</button>
-      <button id="closeView" class="icon-btn close-btn" title="Close" aria-label="Close">✕</button>
+    <nav class="view-switcher" aria-label="打开方式">
+      <button class="view-btn" data-open-container="window" title="在独立窗口中打开">独立窗口</button>
+      <button class="view-btn" data-open-container="tab" title="在标签页中打开">标签页</button>
+      <button id="closeView" class="icon-btn close-btn" title="关闭" aria-label="关闭">✕</button>
     </nav>
 
     <div id="providers"></div>
     <div id="emptyState" class="empty" hidden>
-      <p>No providers enabled.</p>
-      <button id="emptySettings" class="small-btn">Open Settings</button>
+      <p>尚未启用任何服务商</p>
+      <button id="emptySettings" class="small-btn">打开设置</button>
     </div>
 
     <footer>
-      <span id="privacyText">Local-only. No analytics.</span>
+      <span id="privacyText">仅本地运行 · 无统计</span>
       <span class="footer-links">
-        <button class="link-btn" data-open="about.html">About</button>
-        <button id="settings" class="link-btn">Settings</button>
+        <button class="link-btn" data-open="about.html">关于</button>
+        <button id="settings" class="link-btn">设置</button>
       </span>
     </footer>
   </main>
